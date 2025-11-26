@@ -420,14 +420,33 @@ const clearAllData = () => {
       <div className="w-full max-w-5xl space-y-6">
         {/* Top Bar */}
         <header className="flex items-center justify-between">
-  <div>...</div>
+  <div className="flex items-center gap-3">
+    <div className="relative h-25 w-25 md:h-12 md:w-12">
+      <Image
+        src="/lazycoach-logo.png"  // ★ 改成你的真實檔名
+        alt="LazyCoach logo"
+        fill
+        sizes="48px"
+        className="object-contain"
+        priority
+      />
+    </div>
+
+    <div>
+      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+        LazyCoach
+      </h1>
+      <p className="text-xs text-slate-500">
+        ultra fast, human-friendly workout logging
+      </p>
+    </div>
+  </div>
 
   <div className="flex items-center gap-3">
     <span className="hidden md:inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] text-slate-500 shadow-sm">
       <span className="h-2 w-2 rounded-full bg-emerald-400" />
       Local data · Auto save
     </span>
-
     <button
       onClick={clearAllData}
       className="text-xs px-3 py-1.5 rounded-full border border-red-300 text-red-500 hover:bg-red-50 transition"
@@ -436,6 +455,7 @@ const clearAllData = () => {
     </button>
   </div>
 </header>
+
         {/* Today display */}
         <section className="text-sm text-slate-500">
           Today ：
