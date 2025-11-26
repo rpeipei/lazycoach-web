@@ -46,9 +46,7 @@ const STORAGE_KEYS = {
 };
 
 const defaultStudents: Student[] = [
-  { id: 1, name: "Alice", notes: "比基尼選手", sessionsThisWeek: 2 },
-  { id: 2, name: "Bob", notes: "減脂期", sessionsThisWeek: 1 },
-  { id: 3, name: "Cathy", notes: "備賽中", sessionsThisWeek: 3 },
+
 ];
 
 const todayKey = new Date().toISOString().slice(0, 10);
@@ -115,8 +113,8 @@ export default function HomePage() {
         setStudents(parsed);
         if (parsed.length > 0) setSelectedStudentId(parsed[0].id);
       } else {
-        setStudents(defaultStudents);
-        setSelectedStudentId(defaultStudents[0]?.id ?? null);
+        setStudents([]);
+        setSelectedStudentId(null);
       }
 
       // 讀取課程：可能是舊版 (單一動作) 或新版 (Lesson[])
@@ -156,8 +154,8 @@ export default function HomePage() {
       }
     } catch (e) {
       console.error("讀取 localStorage 發生問題：", e);
-      setStudents(defaultStudents);
-      setSelectedStudentId(defaultStudents[0]?.id ?? null);
+      setStudents([]);
+      setSelectedStudentId(null);
     }
   }, []);
 
@@ -326,6 +324,30 @@ export default function HomePage() {
     setLastDeleted(null);
   };
 
+// 一鍵清除全部資料（學生＋課程＋體重＋localStorage）
+const clearAllData = () => {
+  const confirm1 = window.confirm("⚠️ 確定要清除所有資料？（學生、課程、體重紀錄）");
+  if (!confirm1) return;
+
+  const confirm2 = window.confirm("此動作無法復原，你真的真的確定嗎？");
+  if (!confirm2) return;
+
+  // 清空 React state
+  setStudents([]);
+  setLessons([]);
+  setWeights([]);
+  setSelectedStudentId(null);
+
+  // 清空 localStorage
+  localStorage.removeItem(STORAGE_KEYS.students);
+  localStorage.removeItem(STORAGE_KEYS.sessions);
+  localStorage.removeItem(STORAGE_KEYS.weights);
+
+  alert("所有資料已清除，系統重置完成！");
+};
+
+
+
   // ---------- 動作：刪除整堂課 ----------
   const handleDeleteLesson = (id: number) => {
     const target = lessons.find((l) => l.id === id);
@@ -398,35 +420,22 @@ export default function HomePage() {
       <div className="w-full max-w-5xl space-y-6">
         {/* Top Bar */}
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* 你的 icon 圖：請把檔案放在 public，例如 /lazycoach-logo.png */}
-            <div className="relative h-25 w-25 md:h-12 md:w-12">
-              <Image
-                src="/lazycoach-logo.png" // 檔名依你實際的改
-                alt="LazyCoach logo"
-                fill
-                sizes="48px"
-                className="object-contain"
-                priority
-              />
-            </div>
+  <div>...</div>
 
-            <div>
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-                LazyCoach
-              </h1>
-              <p className="text-xs text-slate-500">
-                Efficient and Effective
-              </p>
-            </div>
-          </div>
+  <div className="flex items-center gap-3">
+    <span className="hidden md:inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] text-slate-500 shadow-sm">
+      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+      Local data · Auto save
+    </span>
 
-          <span className="hidden md:inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] text-slate-500 shadow-sm">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            Local data · Auto save
-          </span>
-        </header>
-
+    <button
+      onClick={clearAllData}
+      className="text-xs px-3 py-1.5 rounded-full border border-red-300 text-red-500 hover:bg-red-50 transition"
+    >
+      🧹 清除全部資料
+    </button>
+  </div>
+</header>
         {/* Today display */}
         <section className="text-sm text-slate-500">
           Today ：
