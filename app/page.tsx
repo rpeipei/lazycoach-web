@@ -426,7 +426,7 @@ const clearAllData = () => {
         src="/lazycoach-logo.png"  // ★ 改成你的真實檔名
         alt="LazyCoach logo"
         fill
-        sizes="48px"
+        sizes="72px"
         className="object-contain"
         priority
       />
@@ -437,7 +437,7 @@ const clearAllData = () => {
         LazyCoach
       </h1>
       <p className="text-xs text-slate-500">
-        ultra fast, human-friendly workout logging
+        Efficient and Effective
       </p>
     </div>
   </div>
