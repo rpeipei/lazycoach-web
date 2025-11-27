@@ -390,6 +390,32 @@ const handleDeleteStudent = (studentId: number) => {
   alert("已刪除該學生與所有相關資料。");
 };
 
+// 一鍵匯出備份（students + lessons + weights）
+const handleExportBackup = () => {
+  const backup = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    students,
+    lessons,
+    weights,
+  };
+
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  const dateStr = new Date().toISOString().slice(0, 10); // 例如 2025-11-27
+  a.href = url;
+  a.download = `lazycoach-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+};
+
+
 
   // ---------- 動作：刪除整堂課 ----------
   const handleDeleteLesson = (id: number) => {
@@ -490,6 +516,25 @@ const handleDeleteStudent = (studentId: number) => {
       <span className="h-2 w-2 rounded-full bg-emerald-400" />
       Local data · Auto save
     </span>
+
+    {/* 匯出備份按鈕 */}
+    <button
+      onClick={handleExportBackup}
+      className="text-xs px-3 py-1.5 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-50 transition"
+    >
+      💾 匯出備份
+    </button>
+
+    <button
+      onClick={clearAllData}
+      className="text-xs px-3 py-1.5 rounded-full border border-red-300 text-red-500 hover:bg-red-50 transition"
+    >
+      🧹 清除全部資料
+    </button>
+  </div>
+
+
+
     <button
       onClick={clearAllData}
       className="text-xs px-3 py-1.5 rounded-full border border-red-300 text-red-500 hover:bg-red-50 transition"
