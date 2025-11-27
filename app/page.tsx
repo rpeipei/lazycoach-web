@@ -102,21 +102,22 @@ export default function HomePage() {
   const [lastDeleted, setLastDeleted] = useState<LastDeleted>(null);
 
   // ---------- 初始化：從 localStorage 讀資料 ----------
-  useEffect(() => {
-  if ("serviceWorker" in navigator) {
-    // 只在 production 環境註冊，避免開發時干擾
-    if (process.env.NODE_ENV === "production") {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then(() => {
-          console.log("Service Worker registered");
-        })
-        .catch((err) => {
-          console.error("SW registration failed:", err);
-        });
-    }
-  }
-}, []);
+  // 暫時關掉 SW，避免快取舊版 chunk 把頁面吃掉
+// useEffect(() => {
+//   if ("serviceWorker" in navigator) {
+//     if (process.env.NODE_ENV === "production") {
+//       navigator.serviceWorker
+//         .register("/sw.js")
+//         .then(() => {
+//           console.log("Service Worker registered");
+//         })
+//         .catch((err) => {
+//           console.error("SW registration failed:", err);
+//         });
+//     }
+//   }
+// }, []);
+
 
   useEffect(() => {
     try {
