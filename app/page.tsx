@@ -228,7 +228,7 @@ export default function HomePage() {
     () =>
       weights
         .filter((w) => w.studentId === selectedStudentId)
-        .sort((a, b) => a.date.localeCompare(b.date)),
+        .sort((a, b) => b.date.localeCompare(a.date)),
     [weights, selectedStudentId]
   );
 
