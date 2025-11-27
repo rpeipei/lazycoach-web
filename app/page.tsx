@@ -511,7 +511,7 @@ const handleExportBackup = () => {
     </div>
   </div>
 
-  <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3">
     <span className="hidden md:inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] text-slate-500 shadow-sm">
       <span className="h-2 w-2 rounded-full bg-emerald-400" />
       Local data · Auto save
@@ -533,15 +533,6 @@ const handleExportBackup = () => {
     </button>
   </div>
 
-
-
-    <button
-      onClick={clearAllData}
-      className="text-xs px-3 py-1.5 rounded-full border border-red-300 text-red-500 hover:bg-red-50 transition"
-    >
-      🧹 清除全部資料
-    </button>
-  </div>
 </header>
 
         {/* Today display */}
