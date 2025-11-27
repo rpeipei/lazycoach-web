@@ -362,6 +362,33 @@ const clearAllData = () => {
   alert("所有資料已清除，系統重置完成！");
 };
 
+ // ---------- 動作：刪除學生 ----------
+const handleDeleteStudent = (studentId: number) => {
+  const confirm1 = window.confirm("確定要刪除這位學生嗎？所有課程與紀錄將一併刪除。");
+  if (!confirm1) return;
+
+  const confirm2 = window.confirm("此動作無法復原，你真的真的確定嗎？");
+  if (!confirm2) return;
+
+  // 刪除學生
+  const updatedStudents = students.filter(s => s.id !== studentId);
+  setStudents(updatedStudents);
+
+  // 刪除該學生的課程
+  const updatedLessons = lessons.filter(l => l.studentId !== studentId);
+  setLessons(updatedLessons);
+
+  // 刪除該學生體重紀錄
+  const updatedWeights = weights.filter(w => w.studentId !== studentId);
+  setWeights(updatedWeights);
+
+  // 如果刪掉的剛好是目前選中的學生 → 清空選擇
+  if (selectedStudentId === studentId) {
+    setSelectedStudentId(null);
+  }
+
+  alert("已刪除該學生與所有相關資料。");
+};
 
 
   // ---------- 動作：刪除整堂課 ----------
@@ -519,26 +546,38 @@ const clearAllData = () => {
 
                 {/* 顯示目前學生資訊 */}
                 {selectedStudent && (
-                  <div className="mt-2 text-xs text-slate-700 space-y-1 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-slate-500">目前選擇：</span>
-                        <span className="font-medium">
-                          {selectedStudent.name}
-                        </span>
-                      </div>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-500 text-[11px] px-2 py-0.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                        {selectedStudent.sessionsThisWeek} 堂
-                      </span>
-                    </div>
-                    {selectedStudent.notes && (
-                      <div className="text-slate-500">
-                        備註：{selectedStudent.notes}
-                      </div>
-                    )}
-                  </div>
-                )}
+  <div className="mt-2 text-xs text-slate-700 space-y-2 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
+    <div className="flex items-center justify-between">
+      <div>
+        <span className="text-slate-500">目前選擇：</span>
+        <span className="font-medium">
+          {selectedStudent.name}
+        </span>
+      </div>
+      <span className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-500 text-[11px] px-2 py-0.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+        {selectedStudent.sessionsThisWeek} 堂
+      </span>
+    </div>
+
+    {selectedStudent.notes && (
+      <div className="text-slate-500">
+        備註：{selectedStudent.notes}
+      </div>
+    )}
+
+    {/* 刪除此學生按鈕 */}
+    <div className="pt-1 flex justify-end">
+      <button
+        onClick={() => handleDeleteStudent(selectedStudent.id)}
+        className="text-[11px] px-3 py-1.5 rounded-full border border-red-300 text-red-500 hover:bg-red-50 transition"
+      >
+        刪除此學生（含所有課程與體重）
+      </button>
+    </div>
+  </div>
+)}
+
               </div>
             </div>
 
