@@ -106,7 +106,7 @@ export default function HomePage() {
     // 只在 production 註冊，避免開發時干擾
     if (process.env.NODE_ENV === "production") {
       navigator.serviceWorker
-        .register("/sw.js?v=1") // 加上 ?v=1 幫助跳過舊快取
+        .register("/sw.js?v=3") // 加上 ?v=1 幫助跳過舊快取
         .then((reg) => {
           console.log("Service Worker registered:", reg.scope);
         })
