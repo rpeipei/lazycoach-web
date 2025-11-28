@@ -19,24 +19,27 @@ export const metadata: Metadata = {
   themeColor: "#0f172a",
 };
 
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-TW">
       <head>
-        <link rel="apple-touch-icon" href="/icon-512.png" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="LazyCoach" />
-
+        {/* iOS PWA 相關設定 */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="LazyCoach" />
-        <link rel="manifest" href="/manifest.webmanifest" />
+
+        {/* Apple 主畫面 icon（建議 180x180，但你現在用 192 也可以先用） */}
         <link rel="apple-touch-icon" href="/icon-192.png" />
+
+        {/* 額外指定 manifest（其實上面的 metadata.manifest 已經會幫你處理一次了，保險起見也OK） */}
+        <link rel="manifest" href="/manifest.webmanifest" />
       </head>
-      <body>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
-
