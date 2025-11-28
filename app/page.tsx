@@ -57,6 +57,8 @@ const todayDisplay = new Date().toLocaleDateString("zh-TW", {
 });
 
 export default function HomePage() {
+  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
+
   // ---------- state ----------
   const [students, setStudents] = useState<Student[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -517,6 +519,11 @@ const handleExportBackup = () => {
       <span className="h-2 w-2 rounded-full bg-emerald-400" />
       Local data · Auto save
     </span>
+
+    <div className="text-[10px] text-slate-400">
+  v{appVersion}
+</div>
+
 
     {/* 匯出備份按鈕 */}
     <button
