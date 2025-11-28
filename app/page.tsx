@@ -1056,40 +1056,7 @@ const handleExportBackup = () => {
             )}
           </div>
         </section>
-              {/* 系統工具 / 備份區塊：放在頁面最底部 */}
-      <section className="mt-4">
-        <div className="bg-slate-900 text-slate-50 rounded-2xl px-4 py-3 md:px-5 md:py-4 shadow-sm space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.16em] uppercase text-slate-300">
-                SYSTEM TOOLS
-              </p>
-              <p className="text-[11px] text-slate-400">
-                本機儲存 · 建議定期匯出備份
-              </p>
-            </div>
-            <span className="inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-[11px] text-slate-300">
-              版本&nbsp;v{appVersion}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={handleExportBackup /* 這裡換成你原本匯出的函式名稱 */}
-              className="inline-flex items-center justify-center gap-1 rounded-xl bg-slate-100 text-slate-900 text-xs font-semibold py-2 hover:bg-white transition-colors"
-            >
-              💾 匯出備份
-            </button>
-
-            <button
-              onClick={clearAllData}
-              className="inline-flex items-center justify-center gap-1 rounded-xl border border-red-300 text-red-100 text-xs font-semibold py-2 hover:bg-red-700/70 hover:border-red-400 transition-colors"
-            >
-              🧹 清除全部資料
-            </button>
-          </div>
-        </div>
-      </section>
+              
       {/* ===== 全域 Footer 工具列 ===== */}
 <footer className="mt-10 w-full flex flex-col items-center gap-3 text-[11px] text-slate-500 pb-6">
 
@@ -1113,10 +1080,15 @@ const handleExportBackup = () => {
     </button>
   </div>
 
-  {/* 版本號（vX.X.X） */}
-  <span className="text-[10px] text-slate-400">
-    {process.env.NEXT_PUBLIC_APP_VERSION ?? "v0.0.0-dev"}
-  </span>
+  {/* 說明文字 + 版本號 */}
+  <div className="flex flex-col items-center gap-0.5">
+    <span className="text-[10px] text-slate-500">
+      本機儲存 · 建議定期匯出備份
+    </span>
+    <span className="text-[10px] text-slate-400">
+      版本 {process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"}
+    </span>
+  </div>
 </footer>
 
             
