@@ -493,11 +493,11 @@ const handleExportBackup = () => {
     <main className="min-h-screen bg-slate-50 text-slate-900 flex justify-center px-4 py-8">
       <div className="w-full max-w-5xl space-y-6">
         {/* Top Bar */}
-        <header className="flex items-center justify-between">
+       <header className="flex items-center justify-between">
   <div className="flex items-center gap-3">
-    <div className="relative h-25 w-25 md:h-12 md:w-12">
+    <div className="relative h-20 w-20 md:h-16 md:w-16">
       <Image
-        src="/lazycoach-logo.png"  // ★ 改成你的真實檔名
+        src="/lazycoach-logo.png"
         alt="LazyCoach logo"
         fill
         sizes="72px"
@@ -507,43 +507,19 @@ const handleExportBackup = () => {
     </div>
 
     <div>
-      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight flex items-baseline gap-1">
         LazyCoach
+        <span className="text-[10px] text-slate-400 align-baseline">
+          v{appVersion}
+        </span>
       </h1>
       <p className="text-xs text-slate-500">
         Efficient and Effective
       </p>
     </div>
   </div>
-
-    <div className="flex items-center gap-3">
-    <span className="hidden md:inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] text-slate-500 shadow-sm">
-      <span className="h-2 w-2 rounded-full bg-emerald-400" />
-      Local data · Auto save
-    </span>
-
-    <div className="text-[10px] text-slate-400">
-  v{appVersion}
-</div>
-
-
-    {/* 匯出備份按鈕 */}
-    <button
-      onClick={handleExportBackup}
-      className="text-xs px-3 py-1.5 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-50 transition"
-    >
-      💾 匯出備份
-    </button>
-
-    <button
-      onClick={clearAllData}
-      className="text-xs px-3 py-1.5 rounded-full border border-red-300 text-red-500 hover:bg-red-50 transition"
-    >
-      🧹 清除全部資料
-    </button>
-  </div>
-
 </header>
+
 
         {/* Today display */}
         <section className="text-sm text-slate-500">
@@ -1082,6 +1058,70 @@ const handleExportBackup = () => {
             )}
           </div>
         </section>
+              {/* 系統工具 / 備份區塊：放在頁面最底部 */}
+      <section className="mt-4">
+        <div className="bg-slate-900 text-slate-50 rounded-2xl px-4 py-3 md:px-5 md:py-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.16em] uppercase text-slate-300">
+                SYSTEM TOOLS
+              </p>
+              <p className="text-[11px] text-slate-400">
+                本機儲存 · 建議定期匯出備份
+              </p>
+            </div>
+            <span className="inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-[11px] text-slate-300">
+              版本&nbsp;v{appVersion}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={handleExportBackup /* 這裡換成你原本匯出的函式名稱 */}
+              className="inline-flex items-center justify-center gap-1 rounded-xl bg-slate-100 text-slate-900 text-xs font-semibold py-2 hover:bg-white transition-colors"
+            >
+              💾 匯出備份
+            </button>
+
+            <button
+              onClick={clearAllData}
+              className="inline-flex items-center justify-center gap-1 rounded-xl border border-red-300 text-red-100 text-xs font-semibold py-2 hover:bg-red-700/70 hover:border-red-400 transition-colors"
+            >
+              🧹 清除全部資料
+            </button>
+          </div>
+        </div>
+      </section>
+      {/* ===== 全域 Footer 工具列 ===== */}
+<footer className="mt-10 w-full flex flex-col items-center gap-3 text-[11px] text-slate-500 pb-6">
+
+  {/* 工具按鈕區塊 */}
+  <div className="flex items-center gap-3">
+
+    {/* 匯出備份 */}
+    <button
+      onClick={handleExportBackup}
+      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-xs font-medium text-slate-700 transition"
+    >
+      📦 匯出備份
+    </button>
+
+    {/* 清除資料 */}
+    <button
+      onClick={clearAllData}
+      className="px-3 py-1.5 bg-red-50 hover:bg-red-100 border border-red-300 rounded-xl text-xs font-medium text-red-500 transition"
+    >
+      🧹 清除資料
+    </button>
+  </div>
+
+  {/* 版本號（vX.X.X） */}
+  <span className="text-[10px] text-slate-400">
+    {process.env.NEXT_PUBLIC_APP_VERSION ?? "v0.0.0-dev"}
+  </span>
+</footer>
+
+            
       </div>
 
       {/* Undo Snackbar */}
