@@ -510,7 +510,7 @@ const handleExportBackup = () => {
       <h1 className="text-2xl md:text-3xl font-semibold tracking-tight flex items-baseline gap-1">
         LazyCoach
         <span className="text-[10px] text-slate-400 align-baseline">
-          v{appVersion}
+          {appVersion}
         </span>
       </h1>
       <p className="text-xs text-slate-500">
