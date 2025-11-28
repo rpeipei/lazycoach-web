@@ -105,12 +105,13 @@ export default function HomePage() {
 
   useEffect(() => {
   if ("serviceWorker" in navigator) {
-    // 只在 production 註冊，避免開發時干擾
     if (process.env.NODE_ENV === "production") {
       navigator.serviceWorker
-        .register("/sw.js?v=3") // 加上 ?v=1 幫助跳過舊快取
+        .register("/sw.js?v=1.0.0") // ← 之後有大改就改成 ?v=4, ?v=5 ...
         .then((reg) => {
           console.log("Service Worker registered:", reg.scope);
+          // 這行會主動檢查更新
+          reg.update();
         })
         .catch((err) => {
           console.error("SW registration failed:", err);
@@ -118,6 +119,7 @@ export default function HomePage() {
     }
   }
 }, []);
+
 
 
 
