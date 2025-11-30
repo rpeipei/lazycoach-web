@@ -17,6 +17,7 @@ type LessonExercise = {
   weight: number;
   reps: number;
   sets: number;
+  restSeconds?: number; // ✅ 新增：組間休息秒數（選填）
 };
 
 type Lesson = {
@@ -81,6 +82,9 @@ export default function HomePage() {
   const [weightKg, setWeightKg] = useState("");
   const [reps, setReps] = useState("");
   const [sets, setSets] = useState("");
+  const [restSeconds, setRestSeconds] = useState(""); // ✅ 新增
+  const [editingExerciseId, setEditingExerciseId] = useState<number | null>(null);
+
 
   // 目前正在編輯的這堂課：動作暫存
   const [draftExercises, setDraftExercises] = useState<LessonExercise[]>([]);
@@ -107,10 +111,9 @@ export default function HomePage() {
   if ("serviceWorker" in navigator) {
     if (process.env.NODE_ENV === "production") {
       navigator.serviceWorker
-        .register("/sw.js?v=1.0.0") // ← 之後有大改就改成 ?v=4, ?v=5 ...
+        .register(`/sw.js?v=${appVersion}`)
         .then((reg) => {
           console.log("Service Worker registered:", reg.scope);
-          // 這行會主動檢查更新
           reg.update();
         })
         .catch((err) => {
@@ -118,7 +121,8 @@ export default function HomePage() {
         });
     }
   }
-}, []);
+}, [appVersion]);
+
 
 
 
@@ -182,13 +186,16 @@ export default function HomePage() {
 
   // ---------- 存回 localStorage ----------
   useEffect(() => {
-    if (students.length) {
-      window.localStorage.setItem(
-        STORAGE_KEYS.students,
-        JSON.stringify(students)
-      );
-    }
-  }, [students]);
+  if (students.length) {
+    window.localStorage.setItem(
+      STORAGE_KEYS.students,
+      JSON.stringify(students)
+    );
+  } else {
+    window.localStorage.removeItem(STORAGE_KEYS.students);
+  }
+}, [students]);
+
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -235,6 +242,14 @@ export default function HomePage() {
         .sort((a, b) => b.date.localeCompare(a.date)),
     [weights, selectedStudentId]
   );
+  // 折線圖用：改成「舊 → 新」排序，讓時間從左到右
+  const weightRecordsForChart = useMemo(
+    () =>
+      weightRecordsForSelected
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    [weightRecordsForSelected]
+  );
 
   const maxWeightForChart = useMemo(() => {
     if (!weightRecordsForSelected.length) return 0;
@@ -249,25 +264,24 @@ export default function HomePage() {
   const chartWidth = 260;
   const chartHeight = 80;
 
-  const linePoints = useMemo(() => {
-    if (!weightRecordsForSelected.length) return "";
+    const linePoints = useMemo(() => {
+    if (!weightRecordsForChart.length) return "";
     const range =
       maxWeightForChart - minWeightForChart === 0
         ? 1
         : maxWeightForChart - minWeightForChart;
 
-    return weightRecordsForSelected
+    return weightRecordsForChart
       .map((w, index) => {
         const x =
           (chartWidth * index) /
-          Math.max(weightRecordsForSelected.length - 1, 1);
+          Math.max(weightRecordsForChart.length - 1, 1);
         const normalized = (w.weight - minWeightForChart) / range;
-        const y =
-          chartHeight - 10 - normalized * (chartHeight - 20);
+        const y = chartHeight - 10 - normalized * (chartHeight - 20);
         return `${x},${y}`;
       })
       .join(" ");
-  }, [weightRecordsForSelected, maxWeightForChart, minWeightForChart]);
+  }, [weightRecordsForChart, maxWeightForChart, minWeightForChart]);
 
   // ---------- 動作：新增學生 ----------
   const handleAddStudent = () => {
@@ -287,7 +301,7 @@ export default function HomePage() {
   };
 
   // ---------- 動作：把動作加入「這堂課」的暫存 ----------
-  const handleAddExerciseToDraft = () => {
+    const handleAddExerciseToDraft = () => {
     const exName = exerciseName.trim();
     if (!exName) return;
 
@@ -296,21 +310,72 @@ export default function HomePage() {
     const s = Number(sets);
     if (!w || !r || !s) return;
 
-    const exercise: LessonExercise = {
-      id: Date.now() + Math.random(),
-      name: exName,
-      weight: w,
-      reps: r,
-      sets: s,
-    };
+    const rest = restSeconds.trim() ? Number(restSeconds) : undefined;
 
-    setDraftExercises((prev) => [...prev, exercise]);
+    if (editingExerciseId !== null) {
+      // 編輯既有動作
+      setDraftExercises((prev) =>
+        prev.map((ex) =>
+          ex.id === editingExerciseId
+            ? { ...ex, name: exName, weight: w, reps: r, sets: s, restSeconds: rest }
+            : ex
+        )
+      );
+      setEditingExerciseId(null);
+    } else {
+      // 新增動作
+      const exercise: LessonExercise = {
+        id: Date.now() + Math.random(),
+        name: exName,
+        weight: w,
+        reps: r,
+        sets: s,
+        restSeconds: rest,
+      };
+      setDraftExercises((prev) => [...prev, exercise]);
+    }
 
+    // 清空輸入欄位
     setExerciseName("");
     setWeightKg("");
     setReps("");
     setSets("");
+    setRestSeconds("");
   };
+    const handleEditDraftExercise = (ex: LessonExercise) => {
+    setEditingExerciseId(ex.id);
+    setExerciseName(ex.name);
+    setWeightKg(String(ex.weight));
+    setReps(String(ex.reps));
+    setSets(String(ex.sets));
+    setRestSeconds(
+      ex.restSeconds !== undefined && ex.restSeconds !== null
+        ? String(ex.restSeconds)
+        : ""
+    );
+  };
+
+  const handleDeleteDraftExercise = (id: number) => {
+    setDraftExercises((prev) => prev.filter((ex) => ex.id !== id));
+    if (editingExerciseId === id) {
+      setEditingExerciseId(null);
+      setExerciseName("");
+      setWeightKg("");
+      setReps("");
+      setSets("");
+      setRestSeconds("");
+    }
+  };
+   // ✅ 在這裡補上
+  const handleCancelEditExercise = () => {
+    setEditingExerciseId(null);
+    setExerciseName("");
+    setWeightKg("");
+    setReps("");
+    setSets("");
+    setRestSeconds("");
+  };
+
 
   // ---------- 動作：儲存整堂課 ----------
   const handleSaveLesson = () => {
@@ -711,52 +776,79 @@ const handleExportBackup = () => {
                     </label>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <label className="space-y-1">
-                      <span className="block text-xs text-slate-500">
-                        重量 (kg)
-                      </span>
-                      <input
-                        value={weightKg}
-                        onChange={(e) => setWeightKg(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded-xl px-2 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
-                        placeholder="40"
-                        inputMode="decimal"
-                      />
-                    </label>
-                    <label className="space-y-1">
-                      <span className="block text-xs text-slate-500">
-                        次數 (reps)
-                      </span>
-                      <input
-                        value={reps}
-                        onChange={(e) => setReps(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded-xl px-2 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
-                        placeholder="12"
-                        inputMode="numeric"
-                      />
-                    </label>
-                    <label className="space-y-1">
-                      <span className="block text-xs text-slate-500">
-                        組數 (sets)
-                      </span>
-                      <input
-                        value={sets}
-                        onChange={(e) => setSets(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded-xl px-2 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
-                        placeholder="3"
-                        inputMode="numeric"
-                      />
-                    </label>
-                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+  <label className="space-y-1">
+    <span className="block text-xs text-slate-500">
+      重量 (kg)
+    </span>
+    <input
+      value={weightKg}
+      onChange={(e) => setWeightKg(e.target.value)}
+      className="w-full bg-white border border-slate-300 rounded-xl px-2 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
+      placeholder="40"
+      inputMode="decimal"
+    />
+  </label>
+
+  <label className="space-y-1">
+    <span className="block text-xs text-slate-500">
+      次數 (reps)
+    </span>
+    <input
+      value={reps}
+      onChange={(e) => setReps(e.target.value)}
+      className="w-full bg-white border border-slate-300 rounded-xl px-2 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
+      placeholder="12"
+      inputMode="numeric"
+    />
+  </label>
+
+  <label className="space-y-1">
+    <span className="block text-xs text-slate-500">
+      組數 (sets)
+    </span>
+    <input
+      value={sets}
+      onChange={(e) => setSets(e.target.value)}
+      className="w-full bg-white border border-slate-300 rounded-xl px-2 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
+      placeholder="3"
+      inputMode="numeric"
+    />
+  </label>
+
+  <label className="space-y-1">
+    <span className="block text-xs text-slate-500">
+      組間休息（秒）(選填)
+    </span>
+    <input
+      value={restSeconds}
+      onChange={(e) => setRestSeconds(e.target.value)}
+      className="w-full bg-white border border-slate-300 rounded-xl px-2 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
+      placeholder="例如：90"
+      inputMode="numeric"
+    />
+  </label>
+</div>
+
+
 
                   <button
-                    onClick={handleAddExerciseToDraft}
-                    disabled={!selectedStudentId}
-                    className="mt-1 w-full rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:text-slate-500 text-white text-xs font-semibold py-2 transition-colors"
-                  >
-                    ＋ 加入動作到本堂課
-                  </button>
+  onClick={handleAddExerciseToDraft}
+  disabled={!selectedStudentId}
+  className="mt-1 w-full rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:text-slate-500 text-white text-xs font-semibold py-2 transition-colors"
+>
+  {editingExerciseId !== null ? "💾 更新動作" : "＋ 加入動作到本堂課"}
+</button>
+{editingExerciseId !== null && (
+  <button
+    type="button"
+    onClick={handleCancelEditExercise}
+    className="mt-1 w-full rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] text-slate-600 py-1.5 border border-slate-300 transition"
+  >
+    取消編輯動作
+  </button>
+)}
+
 
                   {/* 顯示目前這堂課已加入的動作 */}
                   <div className="mt-2">
@@ -764,24 +856,48 @@ const handleExportBackup = () => {
                       本堂課已加入的動作
                     </h3>
                     {draftExercises.length === 0 ? (
-                      <p className="text-xs text-slate-400">
-                        還沒有動作，先新增一個。
-                      </p>
-                    ) : (
-                      <ul className="space-y-1 text-xs text-slate-700">
-                        {draftExercises.map((ex) => (
-                          <li
-                            key={ex.id}
-                            className="flex justify-between items-center rounded-xl bg-white border border-slate-200 px-3 py-1.5"
-                          >
-                            <span>{ex.name}</span>
-                            <span className="text-slate-500">
-                              {ex.weight}kg × {ex.reps} × {ex.sets}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+  <p className="text-xs text-slate-400">
+    還沒有動作，先新增一個。
+  </p>
+) : (
+  <ul className="space-y-1 text-xs text-slate-700">
+    {draftExercises.map((ex) => (
+      <li
+        key={ex.id}
+        className="flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-1.5 gap-2"
+      >
+        <div className="flex flex-col">
+          <span className="font-medium">{ex.name}</span>
+          <span className="text-[11px] text-slate-500">
+            {ex.weight}kg × {ex.reps} × {ex.sets}
+            {ex.restSeconds !== undefined &&
+              ex.restSeconds !== null &&
+              ex.restSeconds !== 0 && (
+                <> · 休息 {ex.restSeconds}s</>
+              )}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => handleEditDraftExercise(ex)}
+            className="text-[11px] px-2 py-1 rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            編輯
+          </button>
+          <button
+            type="button"
+            onClick={() => handleDeleteDraftExercise(ex.id)}
+            className="text-[11px] px-2 py-1 rounded-full border border-red-300 hover:bg-red-50 text-red-500 transition-colors"
+          >
+            刪除
+          </button>
+        </div>
+      </li>
+    ))}
+  </ul>
+)}
+
                   </div>
 
                   <button
@@ -833,8 +949,14 @@ const handleExportBackup = () => {
                               >
                                 <span>{ex.name}</span>
                                 <span>
-                                  {ex.weight}kg × {ex.reps} × {ex.sets}
-                                </span>
+  {ex.weight}kg × {ex.reps} × {ex.sets}
+  {ex.restSeconds !== undefined &&
+    ex.restSeconds !== null &&
+    ex.restSeconds !== 0 && (
+      <> · 休息 {ex.restSeconds}s</>
+    )}
+</span>
+
                               </li>
                             ))}
                           </ul>
@@ -909,8 +1031,14 @@ const handleExportBackup = () => {
                                   >
                                     <span>{ex.name}</span>
                                     <span>
-                                      {ex.weight}kg × {ex.reps} × {ex.sets}
-                                    </span>
+  {ex.weight}kg × {ex.reps} × {ex.sets}
+  {ex.restSeconds !== undefined &&
+    ex.restSeconds !== null &&
+    ex.restSeconds !== 0 && (
+      <> · 休息 {ex.restSeconds}s</>
+    )}
+</span>
+
                                   </li>
                                 ))}
                               </ul>
@@ -998,33 +1126,34 @@ const handleExportBackup = () => {
                               points={linePoints}
                             />
                           )}
-                          {weightRecordsForSelected.map((w, index) => {
-                            const range =
-                              maxWeightForChart - minWeightForChart === 0
-                                ? 1
-                                : maxWeightForChart - minWeightForChart;
-                            const x =
-                              (chartWidth * index) /
-                              Math.max(
-                                weightRecordsForSelected.length - 1,
-                                1
-                              );
-                            const normalized =
-                              (w.weight - minWeightForChart) / range;
-                            const y =
-                              chartHeight -
-                              10 -
-                              normalized * (chartHeight - 20);
-                            return (
-                              <circle
-                                key={w.id}
-                                cx={x}
-                                cy={y}
-                                r={3}
-                                fill="#ef4444"
-                              />
-                            );
-                          })}
+                              {weightRecordsForChart.map((w, index) => {
+      const range =
+        maxWeightForChart - minWeightForChart === 0
+          ? 1
+          : maxWeightForChart - minWeightForChart;
+      const x =
+        (chartWidth * index) /
+        Math.max(
+          weightRecordsForChart.length - 1,
+          1
+        );
+      const normalized =
+        (w.weight - minWeightForChart) / range;
+      const y =
+        chartHeight -
+        10 -
+        normalized * (chartHeight - 20);
+      return (
+        <circle
+          key={w.id}
+          cx={x}
+          cy={y}
+          r={3}
+          fill="#ef4444"
+        />
+      );
+    })}
+
                         </svg>
                       </div>
 
